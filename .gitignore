@@ -51,4 +51,10 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
+# No reason to upload my lab reports to git...
+*.docx
+*.pdf
 
+# Any temporary files written by editors
+*.tmp
+*.swp
