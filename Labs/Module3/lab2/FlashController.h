@@ -203,17 +203,20 @@ bool unlockFlash() {
     return true;
   }
 
+  Serial.print("");
   // Else, perform the unlock sequence
   while (FLASH_SR_BSY) {
     /*NOOP*/
   }
   *FLASH_KEYR = KEY1;
-  
+
+  Serial.print("");
   while (FLASH_SR_BSY) {
     /*NOOP*/
   }
   *FLASH_KEYR = KEY2;
 
+  Serial.print("");
   while (FLASH_SR_BSY) {
     /*NOOP*/
   }
