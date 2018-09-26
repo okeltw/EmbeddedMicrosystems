@@ -17,7 +17,7 @@ const int BAUD = 2000000;
 const int UPDATE_RATE = 1000; //milliseconds
 
 // Conversions
-const int OZ_P_GAL = 128
+const int OZ_P_GAL = 128;
 
 // Pin Definitions
 const int A_PIN = 2; // D2 - encoder bit 0
