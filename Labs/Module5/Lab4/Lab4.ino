@@ -1,11 +1,9 @@
-#include <RTClock.h>
-
+#include "RTCController.h"
 #include <TimeLib.h>
 
 // Use https://www.epochconverter.com/ to help set time
 // Current time since epoch: 1538522542 (outdated...obviously)
 
-RTClock rtc;
 
 uint32 tt;
 
@@ -21,7 +19,7 @@ typedef struct Time_t {
   uint32 second;
 } Time_t;
 
-Time_t Time; 
+Time_t Time;
 
 
 void convertTime(uint32 tt)
@@ -59,7 +57,7 @@ uint8_t smToUint(char data)
     case '9':
       return 9;
     default:
-      return -1;  
+      return -1;
   }
 }
 
@@ -77,11 +75,12 @@ void startClk()
 
 void printTime()
 {
-  tt = rtc.now();
+//  Serial.println("blink");
+  tt = rtcGetCount();
   convertTime(tt);
   Serial.print(Time.month);
   Serial.print('/');
-  Serial.print(Time.day);  
+  Serial.print(Time.day);
   Serial.print('/');
   Serial.print(Time.year);
   Serial.print(' ');
@@ -93,20 +92,25 @@ void printTime()
 }
 
 void setup() {
-  pinMode(INT_PIN, INPUT);
-  pinMode(OUTCLK_PIN, OUTPUT);
-  
-  digitalWrite(OUTCLK_PIN, LOW);
-  
   Serial.begin(9600);
   delay(1000);
+  
+  pinMode(INT_PIN, INPUT);
+  pinMode(OUTCLK_PIN, OUTPUT);
+  attachInterrupt(INT_PIN, startClk, FALLING);
+
+  
+  Serial.println('a');
+  rtcInit(); // enable BKP, Clocks, and RTC
+  rtcSetPrescaler(PRL_SECOND);
+  rtcSetCount(now()); // set the count value to TimeLibrary's now()
+  rtcAttachSecondInt(printTime);
+  Serial.println('e');
+
+  digitalWrite(OUTCLK_PIN, LOW);
 
   Serial.println("Set time by sending serial packet with number of seconds since epoch");
 
-  rtc.attachSecondsInterrupt(printTime);
-  attachInterrupt(digitalPinToInterrupt(INT_PIN), startClk, FALLING);
-
-  rtc.setTime(now());
 }
 
 void loop() {
@@ -121,7 +125,7 @@ void loop() {
         data = Serial.read();
       }
   }
-
-  if(newTime) rtc_set_count(newTime);
   
+  if(newTime) rtcSetCount(newTime);
+
 }
