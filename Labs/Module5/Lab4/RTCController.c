@@ -77,7 +77,7 @@ void rtcSetPrescaler(uint32_t prescaleVal)
   rtcWaitFinished();
 }
 
-// dispatch interrupt handler - assume only seconds, as
+// dispatch interrupt handler - assume only seconds for now
 void __irq_rtc(void)
 {
   void (*__handler)(void) = RTC->handler;
