@@ -65,9 +65,9 @@ void startClk()
 {
   noInterrupts();
   bool clkSignal = false;
-  for(int cnt=0; cnt<1024;cnt++)
+  for(int cnt=0; cnt<2048;cnt++)
   {
-    if (cnt % 32 == 0) clkSignal = !clkSignal;
+    clkSignal = !clkSignal;
     digitalWrite(OUTCLK_PIN, clkSignal);
   }
   interrupts();
