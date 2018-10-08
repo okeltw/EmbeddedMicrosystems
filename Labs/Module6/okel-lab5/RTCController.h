@@ -98,6 +98,7 @@ void rtcSetCount(uint32_t countVal);
 void rtcSetPrescaler(uint32_t prescaleVal);
 void rtcSetAlarm(uint32_t t);
 void rtcAttachAlarmInt(voidFuncPtr handlerFunc);
+void rtcDetachAlarmInt();
 
 // simple inline functions
 
@@ -154,6 +155,13 @@ static inline void rtcEnableAlarmInterrupt()
 {
   rtcWaitFinished();
   *bb_perip(&(RTC->regs)->CRH, RTC_CRH_ALRIE_BIT) = 1;
+}
+
+static inline void rtcDisableAlarmInterrupt()
+{
+  rtcWaitFinished();
+  *bb_perip(&(RTC->regs)->CRL, RTC_CRL_ALRF_BIT) = 0;
+  *bb_perip(&(RTC->regs)->CRH, RTC_CRH_ALRIE_BIT) = 0;
 }
 
 /*

@@ -126,3 +126,9 @@ void rtcSetAlarm(uint32_t alarmVal)
   // Wait for the write to finish
   rtcWaitFinished();
 }
+
+void rtcDetachAlarmInt()
+{
+  rtcDisableAlarmInterrupt();
+  RTC->alarmHandler = NULL;
+}
