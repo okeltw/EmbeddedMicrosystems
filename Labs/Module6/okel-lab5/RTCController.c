@@ -2,7 +2,8 @@
 
 static rtc_dev rtc = {
   .regs = RTC_BASE,
-  .handler = NULL
+  .secondHandler = NULL,
+  .alarmHandler = NULL,
 };
 rtc_dev *RTC = &rtc;
 
@@ -29,8 +30,15 @@ void rtcInit()
 
 void rtcAttachSecondInt(voidFuncPtr handlerFunc)
 {
-  RTC->handler = handlerFunc;
+  RTC->secondHandler = handlerFunc;
   rtcEnableSecondInterrupt(handlerFunc);
+  nvic_irq_enable(NVIC_RTC); // Set the Nested Vector Interrupt Control to the RTC
+}
+
+void rtcAttachAlarmInt(voidFuncPtr handlerFunc)
+{
+  RTC->alarmHandler = handlerFunc;
+  rtcEnableAlarmInterrupt(handlerFunc);
   nvic_irq_enable(NVIC_RTC); // Set the Nested Vector Interrupt Control to the RTC
 }
 
@@ -59,6 +67,7 @@ void rtcSetCount(uint32_t countVal)
   // Wait for the write to finish
   rtcWaitFinished();
 }
+
 void rtcSetPrescaler(uint32_t prescaleVal)
 {
   rtcWaitSyncAndFinish();
@@ -77,16 +86,43 @@ void rtcSetPrescaler(uint32_t prescaleVal)
   rtcWaitFinished();
 }
 
+// Make this a macro to simplify and speed up irq
+#define handle_irq(intEnabledRegisters, intMask, handler, handled)  \
+  if (intEnabledRegisters & intMask) {                             \
+    void (*__handler)(void) = handler;                              \
+    if (__handler) {                                                \
+      __handler();                                                  \
+      handled |= intMask;                                           \
+    }                                                               \
+  }
+
 // dispatch interrupt handler - assume only seconds for now
 void __irq_rtc(void)
 {
-  void (*__handler)(void) = RTC->handler;
-  if (__handler)
-  {
-    __handler();
-  }
+  uint32_t intEnabledRegisters = RTC->regs->CRH & RTC->regs->CRL; // Only handle if enabled
+  uint32_t handled = 0; // use to clear the handled bits
 
-  RTC->regs->CRL &= ~RTC_CRL_SECF;
+  handle_irq(intEnabledRegisters, RTC_CRL_SECF, RTC->secondHandler, handled);
+  handle_irq(intEnabledRegisters, RTC_CRL_ALRF, RTC->alarmHandler, handled);
+
+  RTC->regs->CRL &= ~handled; // if the bits were set in handle_irq, clear the int flag
 }
 
-//#define WAIT_FOR_RTOFF   while( (*RTC_CTRL & RTOFF) != RTOFF ) { ;/*noop*/ }
+
+void rtcSetAlarm(uint32_t alarmVal)
+{
+  rtcWaitSyncAndFinish();
+
+  // Enter config mode
+  rtcEnterConfig();
+
+  // Set the registers
+  RTC->regs->ALRH = (alarmVal >> 16);
+  RTC->regs->ALRL = alarmVal;
+
+  // Exit Config Mode
+  rtcExitConfig();
+
+  // Wait for the write to finish
+  rtcWaitFinished();
+}

@@ -70,8 +70,8 @@ typedef struct rtc_reg_map {
 // Device contains mem map and interrupt handler pointer
 typedef struct rtc_dev {
   rtc_reg_map *regs;
-  voidFuncPtr handler;
-
+  voidFuncPtr secondHandler;
+  voidFuncPtr alarmHandler;
 } rtc_dev;
 
 extern rtc_dev *RTC; // set this in the .c file
@@ -96,6 +96,8 @@ void rtcAttachSecondInt(voidFuncPtr handlerFunc); // voidFuncPtr is a void* type
 uint32_t rtcGetCount();
 void rtcSetCount(uint32_t countVal);
 void rtcSetPrescaler(uint32_t prescaleVal);
+void rtcSetAlarm(uint32_t t);
+void rtcAttachAlarmInt(voidFuncPtr handlerFunc);
 
 // simple inline functions
 
@@ -145,7 +147,13 @@ static inline void rtcExitConfig()
 static inline void rtcEnableSecondInterrupt()
 {
   rtcWaitFinished();
-  *bb_perip(&(RTC->regs)->CRH, 0) = 1;
+  *bb_perip(&(RTC->regs)->CRH, RTC_CRH_SECIE_BIT) = 1;
+}
+
+static inline void rtcEnableAlarmInterrupt()
+{
+  rtcWaitFinished();
+  *bb_perip(&(RTC->regs)->CRH, RTC_CRH_ALRIE_BIT) = 1;
 }
 
 /*
