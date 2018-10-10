@@ -9,6 +9,39 @@
 // Currently just places the state machine at 50s to save some time verifying the pattern
 #define DEBUG
 
+// Length of long press, in seconds
+#define LONG_PRESS 2
+
+// Serial to uint
+uint8_t smToUint(char data)
+{
+  switch (data)
+  {
+    case '0':
+      return 0;
+    case '1':
+      return 1;
+    case '2':
+      return 2;
+    case '3':
+      return 3;
+    case '4':
+      return 4;
+    case '5':
+      return 5;
+    case '6':
+      return 6;
+    case '7':
+      return 7;
+    case '8':
+      return 8;
+    case '9':
+      return 9;
+    default:
+      return -1;
+  }
+}
+
 void setup() {
   Serial.begin(9600);
   delay(1000);
@@ -38,7 +71,7 @@ void loop() {
   while(digitalRead(DIAG_BUT) == HIGH)
   {
     // check if it is held down for 5 seconds
-    if (rtcGetCount() >= timestamp+5) 
+    if (rtcGetCount() >= timestamp+LONG_PRESS) 
     {
       if(!diagnosticMode)
       {
@@ -53,6 +86,23 @@ void loop() {
         break;
       }
     }
+  }
+
+  // if in diagnostic mode, allow for time updates
+  if (diagnosticMode)
+  {
+    char data = 0;
+    uint32 newTime = 0;
+    if(Serial.available() > 0) {
+      data = Serial.read();
+      Serial.print("GOT: ");Serial.println(data, DEC);
+      while(data != 10)
+      {
+        newTime = newTime*10 + smToUint(data);
+        data = Serial.read();
+      }
+    }
+    if(newTime) rtcSetCount(newTime);
   }
 
 }
