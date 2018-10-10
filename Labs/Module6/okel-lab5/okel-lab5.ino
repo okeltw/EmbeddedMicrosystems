@@ -45,7 +45,7 @@ uint8_t smToUint(char data)
 void setup() {
   Serial.begin(9600);
   delay(1000);
-  Serial.println("Begin Revision 0.0.4");
+  Serial.println("Begin Revision 2");
   
   pinMode(PUMP_PIN, OUTPUT);
   pinMode(VENT_PIN, OUTPUT);
@@ -95,7 +95,6 @@ void loop() {
     uint32 newTime = 0;
     if(Serial.available() > 0) {
       data = Serial.read();
-      Serial.print("GOT: ");Serial.println(data, DEC);
       while(data != 10)
       {
         newTime = newTime*10 + smToUint(data);

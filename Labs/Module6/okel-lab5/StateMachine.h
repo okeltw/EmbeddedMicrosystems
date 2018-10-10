@@ -91,13 +91,15 @@ void stateMachineInit()
 // Diagnostic functions
 void enterDiagnostics()
 {
+  digitalWrite(PUMP_PIN, LOW);
+  digitalWrite(VENT_PIN, LOW);
+  
   diagnosticMode = true;
 
   rtcDetachAlarmInt();
   attachInterrupt(DIAG_BUT, handler, RISING); 
     
-  digitalWrite(PUMP_PIN, LOW);
-  digitalWrite(VENT_PIN, LOW);
+  
   nextState = d_pumpOn;
 }
 
