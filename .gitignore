@@ -60,3 +60,6 @@ dkms.conf
 *.swp
 ~$*.doc*
 
+# Large files
+Labs/Module6/Lab5-test.mp4
+*.mp4
